@@ -1,128 +1,118 @@
-## Project: Disaster Response Pipeline
+# Disaster Response Pipeline
 
-## 1. Project Overview
+## Project Overview
 
-In this project, I'll apply data engineering to analyze disaster data from <a href="https://www.figure-eight.com/" target="_blank">Figure Eight</a> to build a model for an API that classifies disaster messages.
+This project applies data engineering and machine learning to analyze disaster response messages. The goal is to build a model and a web application that classifies these messages into relevant categories, helping disaster relief agencies respond more efficiently.
 
-_data_ directory contains a data set which are real messages that were sent during disaster events. I will be creating a machine learning pipeline to categorize these events so that appropriate disaster relief agency can be reached out for help.
+You will work with real messages sent during disaster events. The system includes a machine learning pipeline for categorizing messages and a web app interface for emergency workers to input new messages and view classification results. The app also provides data visualizations to help understand message trends.
 
-This project will include a web app where an emergency worker can input a new message and get classification results in several categories. The web app will also display visualizations of the data.
+---
 
+## Project Structure
 
-## 2. Project Components
+The project is divided into three main components:
 
-There are three components of this project:
+### 1. ETL Pipeline (`data/process_data.py`)
 
-### 2.1. ETL Pipeline
+- **Loads** the `messages` and `categories` datasets.
+- **Merges** the datasets into a single data frame.
+- **Cleans** the data to prepare it for machine learning.
+- **Saves** the cleaned data into a SQLite database for later use.
 
-File _data/process_data.py_ contains data cleaning pipeline that:
+### 2. Machine Learning Pipeline (`models/train_classifier.py`)
 
-- Loads the `messages` and `categories` dataset
-- Merges the two datasets
-- Cleans the data
-- Stores it in a **SQLite database**
+- **Loads** data from the SQLite database.
+- **Splits** the data into training and test sets.
+- **Builds** a pipeline that processes text and applies machine learning algorithms.
+- **Trains** and **optimizes** the model using GridSearchCV.
+- **Evaluates** the model on a test set and reports results.
+- **Exports** the trained model as a pickle file for deployment.
 
+### 3. Flask Web App (`app/run.py`)
 
-### 2.2. ML Pipeline
+- Provides a **user interface** for emergency workers to enter new messages.
+- **Predicts** message categories using the trained model.
+- **Displays** classification results and data visualizations.
 
-File _models/train_classifier.py_ contains machine learning pipeline that:
+---
 
-- Loads data from the **SQLite database**
-- Splits the data into training and testing sets
-- Builds a text processing and machine learning pipeline
-- Trains and tunes a model using GridSearchCV
-- Outputs result on the test set
-- Exports the final model as a pickle file
+## How to Run the Project
 
+Follow these steps to set up and run the project from scratch:
 
-### 2.3. Flask Web App
+### 1. Data Cleaning
 
+From the project directory, run:
 
-Running [this command](#com) **from app directory** will start the web app where users can enter their query, i.e., a request message sent during a natural disaster, e.g. _"Please, we need tents and water. We are in Silo, Thank you!"_.
-
-
-## 3. Running
-
-There are three steps to get up and runnning with the web app if you want to start from ETL process.
-
-
-### 3.1. Data Cleaning
-
-**Go to the project directory** and the run the following command:
-
-```bat
+```bash
 python data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db
 ```
 
-The first two arguments are input data and the third argument is the SQLite Database in which we want to save the cleaned data. The ETL pipeline is in _process_data.py_.
+- This command takes the raw data, cleans it, and stores it in a SQLite database (`DisasterResponse.db`).
 
-_DisasterResponse.db_ already exists in _data_ folder but the above command will still run and replace the file with same information. 
+### 2. Train the Classifier
 
+After cleaning the data, train the model by running:
 
-### 3.2. Training Classifier
-
-After the data cleaning process, run this command **from the project directory**:
-
-```bat
+```bash
 python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl
 ```
 
-This will use cleaned data to train the model, improve the model with grid search and saved the model to a pickle file (_classifer.pkl_).
+- This trains the classifier and saves the model as a pickle file (`classifier.pkl`) in the `models` directory.
+- Training may take a few minutes (approximately 4 minutes with grid search).
 
-_classifier.pkl_ already exists but the above command will still run and replace the file will same information.
+### 3. Start the Web App
 
+Navigate to the `app` directory and run:
 
-It took me around **4 minutes** to train the classifier with grid search.
-
-When the models is saved, it will look something like this.
-
-
-
-### 3.3. Starting the web app
-
-Now that we have cleaned the data and trained our model. Now it's time to see the prediction in a user friendly way.
-
-**Go the app directory** and run the following command:
-
-
-```bat
+```bash
 python run.py
 ```
 
-This will start the web app and will direct you to a URL where you can enter messages and get classification results for it.
+- This starts the Flask web app.
+- Access the app via the URL provided in your terminal to input messages and view results.
 
+---
 
+## Notes on Model Performance
 
+- The data is **highly imbalanced**, meaning some categories are much more common than others.
+- The model achieves **high accuracy (~0.94)**, but recall (its ability to find all relevant cases) is lower (~0.6).
+- Exercise caution if using this model for real-world decision-making or production—high accuracy can be misleading with imbalanced data.
 
+---
 
-As we can see the data is highly imbalanced. Though the accuracy metric is [high](#acc) (you will see the exact value after the model is trained by grid search, it is ~0.94), it has a poor value for recall (~0.6). So, take appropriate measures when using this model for decision-making process at a larger scale or in a production environment.
+## Project Files Overview
 
-
-## 5. Files
-
-<pre>
+```
 .
 ├── app
-│   ├── run.py------------------------# FLASK FILE THAT RUNS APP
-│   ├── static
-│   │   └── favicon.ico---------------# FAVICON FOR THE WEB APP
-│   └── templates
-│       ├── go.html-------------------# CLASSIFICATION RESULT PAGE OF WEB APP
-│       └── master.html---------------# MAIN PAGE OF WEB APP
+│   ├── run.py                  # Flask app runner
+│   ├── static/
+│   │   └── favicon.ico         # Web app favicon
+│   └── templates/
+│       ├── go.html             # Classification result page
+│       └── master.html         # Main page
 ├── data
-│   ├── DisasterResponse.db-----------# DATABASE TO SAVE CLEANED DATA TO
-│   ├── disaster_categories.csv-------# DATA TO PROCESS
-│   ├── disaster_messages.csv---------# DATA TO PROCESS
-│   └── process_data.py---------------# PERFORMS ETL PROCESS
-├── img-------------------------------# PLOTS FOR USE IN README AND THE WEB APP
+│   ├── DisasterResponse.db      # SQLite database (cleaned data)
+│   ├── disaster_categories.csv  # Raw data
+│   ├── disaster_messages.csv    # Raw data
+│   └── process_data.py          # ETL script
+├── img                         # Visualization images
 ├── models
-│   └── train_classifier.py-----------# PERFORMS CLASSIFICATION TASK
+│   └── train_classifier.py      # ML pipeline script
+```
 
-</pre>
+---
 
+## Software Requirements
 
-## 6. Software Requirements
+- **Python 3.6.6**
+- All necessary libraries are listed in `requirements.txt`.
+- Uses standard libraries such as `collections`, `json`, `operator`, `pickle`, `pprint`, `re`, `sys`, `time`, and `warnings`.
 
-This project uses **Python 3.6.6** and the necessary libraries are mentioned in _requirements.txt_.
-The standard libraries which are not mentioned in _requirements.txt_ are _collections_, _json_, _operator_, _pickle_, _pprint_, _re_, _sys_, _time_ and _warnings_.
+---
 
+## Summary
+
+This project demonstrates the complete workflow for building a disaster response message classifier—from data cleaning to model training to deployment as a web app. You will gain experience in data engineering, machine learning, and web development, all with a focus on practical, real-world impact.
